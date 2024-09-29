@@ -107,7 +107,7 @@ authRouter.put(
     const userId = Number(req.params.userId);
     const user = req.user;
     if (user.id !== userId && !user.isRole(Role.Admin)) {
-      return res.status(403).json({ message: 'unauthorized123' });
+      return res.status(403).json({ message: 'unauthorized2' });
     }
 
     const updatedUser = await DB.updateUser(userId, email, password);

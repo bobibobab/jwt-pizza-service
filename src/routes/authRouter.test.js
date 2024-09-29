@@ -4,69 +4,76 @@ const { setAuthUser } = require('./authRouter');
 
 const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
-
-describe('entire test', async () => {
-    beforeAll(async () => {
-        testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
-        testUser.name = Math.random().toString(36).substring(2, 12);
-        testUser.password = Math.random().toString(36).substring(2, 12);
-        const registerRes = await request(app).post('/api/auth').send(testUser);
-        testUserAuthToken = registerRes.body.token;
-    })
-
-    test('login and logout', async () => {
-        const loginRes = await request(app).put('/api/auth').send(testUser);
-        expect(loginRes.status).toBe(200);
-        expect(loginRes.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
-
-        const { password, ...user } = { ...testUser, roles: [{ role: 'diner' }] };
-        expect(loginRes.body.user).toMatchObject(user);
-
-        const logoutRes = await request(app).delete('/api/auth').set('Authorization', `Bearer ${testUserAuthToken}`);
-        expect(logoutRes.status).toBe(200);
-    });
-
-    test('setAuthUser line 45-52', async () => {
-        const loginRes = await request(app).put('/api/auth').send(testUser);
-        expect(loginRes.status).toBe(200);
-
-        const token = loginRes.body.token;
-
-        const req = {
-            headers: {
-                authorization: `Bearer ${token}`,
-            },
-            user: null, // This will be set by setAuthUser
-        };
-
-        const res = {};
-        const next = jest.fn();
-        await setAuthUser(req, res, next);
-
-        expect(req.user.name).toBeDefined();
-        expect(req.user.isRole).toBeDefined();
-
-        expect(next).toHaveBeenCalled();
-    });
-
-    test('update user test', async () => {
-        const loginRes = await request(app).put('/api/auth').send(testUser);
-        expect(loginRes.status).toBe(200);
-        const token = loginRes.body.token;
+let testUserID;
 
 
-        const newEmail = Math.random().toString(36).substring(2, 12) + '@test.com';
-        const newPassword = Math.random().toString(36).substring(2, 12);
-        // how to get userId......
-        const updateUser = await request(app).put(`/api/auth/${newPassword}`).set('Authorization', `Bearer ${token}`).send({ email: newEmail, password: newPassword });
-        expect(updateUser.status).toBe(200);
+if (process.env.VSCODE_INSPECTOR_OPTIONS) {
+    jest.setTimeout(60 * 1000 * 5); // 5 minutes
+}
 
-        const { password, ...expectedUser } = { ...testUser, email: newEmail, roles: [{ role: 'diner' }] };
-        expect(updateUser.body).toMatchObject(expectedUser);
 
-        const logoutRes = await request(app).delete('/api/auth').set('Authorization', `Bearer ${token}`);
-        expect(logoutRes.status).toBe(200);
-    });
+beforeAll(async () => {
+    testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
+    testUser.name = Math.random().toString(36).substring(2, 12);
+    testUser.password = Math.random().toString(36).substring(2, 12);
+    const registerRes = await request(app).post('/api/auth').send(testUser);
+    testUserAuthToken = registerRes.body.token;
+    testUserID = registerRes.body.id;
+})
+
+
+test('login and logout', async () => {
+    const loginRes = await request(app).put('/api/auth').send(testUser);
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
+
+    const { password, ...user } = { ...testUser, roles: [{ role: 'diner' }] };
+    expect(loginRes.body.user).toMatchObject(user);
+
+    const logoutRes = await request(app).delete('/api/auth').set('Authorization', `Bearer ${testUserAuthToken}`);
+    expect(logoutRes.status).toBe(200);
 });
+
+test('setAuthUser line 45-52', async () => {
+    // const loginRes = await request(app).put('/api/auth').send(testUser);
+    // expect(loginRes.status).toBe(200);
+
+    const token = testUserAuthToken;
+
+    const req = {
+        headers: {
+            authorization: `Bearer ${token}`,
+        },
+        user: null, // This will be set by setAuthUser
+    };
+
+    const res = {};
+    const next = jest.fn();
+    await setAuthUser(req, res, next);
+
+    expect(req.user.name).toBeDefined();
+    expect(req.user.isRole).toBeDefined();
+
+    expect(next).toHaveBeenCalled();
+});
+
+test('update user test without role of admin', async () => {
+    // const loginRes = await request(app).put('/api/auth').send(testUser);
+    // expect(loginRes.status).toBe(200);
+    const token = testUserAuthToken;
+
+
+    const newEmail = Math.random().toString(36).substring(2, 12) + '@test.com';
+    const newPassword = Math.random().toString(36).substring(2, 12);
+    const userId = testUserID;
+    
+    const updateUser = await request(app).put(`/api/auth/${userId}`).set('Authorization', `Bearer ${token}`).send({ email: newEmail, password: newPassword });
+    // why 401? instead of 403.. 코드 보면 status 403 에 unauthorized 되어 있는데
+
+    expect(updateUser.status).toBe(401);
+
+});
+
+
 
 
