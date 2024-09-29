@@ -48,3 +48,22 @@ test('setAuthUser line 45-52', async () => {
     expect(next).toHaveBeenCalled();
 });
 
+test('update user test', async () => {
+    const loginRes = await request(app).put('/api/auth').send(testUser);
+    expect(loginRes.status).toBe(200);
+    const token = loginRes.body.token;
+
+
+    const newEmail = Math.random().toString(36).substring(2, 12) + '@test.com';
+    const newPassword = Math.random().toString(36).substring(2, 12);
+    // how to get userId......
+    const updateUser = await request(app).put(`/api/auth/${}`).set('Authorization', `Bearer ${token}`).send({ email: newEmail, password: newPassword});
+    expect(updateUser.status).toBe(200);
+    
+    const { password, ...expectedUser } = { ...testUser, email: newEmail, roles: [{ role: 'diner' }] };
+    expect(updateUser.body).toMatchObject(expectedUser);
+
+    const logoutRes = await request(app).delete('/api/auth').set('Authorization', `Bearer ${token}`);
+    expect(logoutRes.status).toBe(200);
+});
+
