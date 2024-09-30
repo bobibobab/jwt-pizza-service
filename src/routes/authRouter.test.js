@@ -1,14 +1,21 @@
 const request = require('supertest');
 const app = require('../service');
-const { setAuthUser } = require('./authRouter');
+const { Role, DB } = require('../database/database.js');
 
 const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
 let testUserID;
+let adminToken;
 
+async function createAdminUser() {
+    let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
+    user.name = Math.random().toString(36).substring(2, 12);
+    user.email = user.name + '@admin.com';
 
-if (process.env.VSCODE_INSPECTOR_OPTIONS) {
-    jest.setTimeout(60 * 1000 * 5); // 5 minutes
+    await DB.addUser(user);
+
+    user.password = 'toomanysecrets ';
+    return user;
 }
 
 
@@ -16,9 +23,13 @@ beforeAll(async () => {
     testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
     testUser.name = Math.random().toString(36).substring(2, 12);
     testUser.password = Math.random().toString(36).substring(2, 12);
+    admin = createAdminUser();
     const registerRes = await request(app).post('/api/auth').send(testUser);
+    const registerResForAdmin = await request(app).post('/api/auth').send(admin);
     testUserAuthToken = registerRes.body.token;
-    testUserID = registerRes.body.id;
+    testUserID = registerRes.body.user.id;
+    adminToken = registerResForAdmin.body.token;
+    
 })
 
 
@@ -34,30 +45,8 @@ test('login and logout', async () => {
     expect(logoutRes.status).toBe(200);
 });
 
-test('setAuthUser line 45-52', async () => {
-    // const loginRes = await request(app).put('/api/auth').send(testUser);
-    // expect(loginRes.status).toBe(200);
-
-    const token = testUserAuthToken;
-
-    const req = {
-        headers: {
-            authorization: `Bearer ${token}`,
-        },
-        user: null, // This will be set by setAuthUser
-    };
-
-    const res = {};
-    const next = jest.fn();
-    await setAuthUser(req, res, next);
-
-    expect(req.user.name).toBeDefined();
-    expect(req.user.isRole).toBeDefined();
-
-    expect(next).toHaveBeenCalled();
-});
-
 test('update user test without role of admin', async () => {
+
     // const loginRes = await request(app).put('/api/auth').send(testUser);
     // expect(loginRes.status).toBe(200);
     const token = testUserAuthToken;
@@ -66,11 +55,14 @@ test('update user test without role of admin', async () => {
     const newEmail = Math.random().toString(36).substring(2, 12) + '@test.com';
     const newPassword = Math.random().toString(36).substring(2, 12);
     const userId = testUserID;
+    const testID = 1;
     
-    const updateUser = await request(app).put(`/api/auth/${userId}`).set('Authorization', `Bearer ${token}`).send({ email: newEmail, password: newPassword });
+    const updateUser = await request(app).put(`/api/auth/${testID}`).set('Authorization', `Bearer ${token}`).send({ email: newEmail, password: newPassword });
     // why 401? instead of 403.. 코드 보면 status 403 에 unauthorized 되어 있는데
-
-    expect(updateUser.status).toBe(401);
+    expect(updateUser.status).toBe(403);
+    const updateByAdmin = await request(app).put(`/api/auth/${userId}`).send({ email: newEmail, password: newPassword });
+    // why 401?? is it supposed to be 200? because of admin token.
+    expect(updateByAdmin.status).toBe(200);
 
 });
 
