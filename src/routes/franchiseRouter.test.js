@@ -9,6 +9,10 @@ if (process.env.VSCODE_INSPECTOR_OPTIONS) {
 let admin;
 let adminID;
 let adminToken;
+let frachiseID;
+let franchiseName;
+let storeName;
+let storeID;
 
 async function createAdminUser() {
     let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
