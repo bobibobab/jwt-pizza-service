@@ -7,11 +7,8 @@ if (process.env.VSCODE_INSPECTOR_OPTIONS) {
 }
 
 let admin;
-
-beforeAll(async () => {
-    admin = createAdminUser();
-})
-
+let adminID;
+let adminToken;
 
 async function createAdminUser() {
     let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
@@ -19,34 +16,126 @@ async function createAdminUser() {
     user.email = user.name + '@admin.com';
 
     await DB.addUser(user);
-    // I think I am getting an error of adding user into the database.
-    // This is what I got: {"message":"Error initializing database","exception":"Encoding not recognized: 'cesu8' (searched as: 'cesu8')","connection":{"host":"127.0.0.1","user":"root","password":"Fleh1234!@#$","database":"pizza","connectTimeout":60000}}
-    
-    user.password = 'toomanysecrets ';
+    user.password = 'toomanysecrets';
     return user;
 }
+
+beforeAll(async () => {
+    admin = await createAdminUser();
+    const loginRes = await request(app).put('/api/auth').send(admin);
+    adminToken = loginRes.body.token;
+    adminID = loginRes.body.user.id;
+})
+
 
 test('get franchises test', async () => {
     const franchise = await request(app).get('/api/franchise').send(admin);
     expect(franchise.status).toBe(200);
 });
 
+test('get user franchises', async() => {
+    //how to get userID? by register?
+    
+    const userFranchisesRes = await request(app).get(`/api/franchise/${adminID}`).set('Authorization', `Bearer ${adminToken}`);
+    expect(userFranchisesRes.status).toBe(200);
+ });
+
 test('create franchises test', async () => {
-
-    //how to get admin token...
-    const token...;
-
+    franchiseName = Math.random().toString(36).substring(2, 12);
     const franchiseData = {
-        name: 'New Franchise',
-        location: '123 Franchise Ave',
-        owner: 'John Doe'
+        name: franchiseName,
+        admins: [{ email: admin.email}]
     };
 
     const franchiseRes = await request(app)
         .post('/api/franchise')
-        .set('Authorization', `Bearer ${token}`)  // Set the Authorization header
+        .set('Authorization', `Bearer ${adminToken}`)  // Set the Authorization header
         .send(franchiseData); 
 
-    const franchise = await request(app).post('/api/franchise').send(franchiseRes);
-    expect(franchise.status).toBe(200);
+    expect(franchiseRes.status).toBe(200);
 });
+
+test('delete franchises test', async () => {
+    franchiseName = Math.random().toString(36).substring(2, 12);
+    const franchiseData = {
+        name: franchiseName,
+        admins: [{ email: admin.email }]
+    };
+
+    const franchiseRes = await request(app)
+        .post('/api/franchise')
+        .set('Authorization', `Bearer ${adminToken}`)  // Set the Authorization header
+        .send(franchiseData);
+
+    expect(franchiseRes.status).toBe(200);
+    frachiseID = franchiseRes.body.id;
+
+    const deleteFranchise = await request(app).delete(`/api/franchise/${frachiseID}`).set('Authorization', `Bearer ${adminToken}`);
+    expect(deleteFranchise.status).toBe(200);
+});
+
+test('create store test', async () => {
+    franchiseName = Math.random().toString(36).substring(2, 12);
+    const franchiseData = {
+        name: franchiseName,
+        admins: [{ email: admin.email }]
+    };
+
+    const franchiseRes = await request(app)
+        .post('/api/franchise')
+        .set('Authorization', `Bearer ${adminToken}`)  // Set the Authorization header
+        .send(franchiseData);
+
+    expect(franchiseRes.status).toBe(200);
+    frachiseID = franchiseRes.body.id;
+
+    storeName = Math.random().toString(36).substring(2, 12);
+
+    const storeData = {
+        franchiseId: frachiseID,
+        name: franchiseName
+    }
+
+    const storeRes = await request(app)
+        .post(`/api/franchise/${frachiseID}/store`)
+        .set('Authorization', `Bearer ${adminToken}`)  // Set the Authorization header
+        .send(storeData);
+
+    expect(storeRes.status).toBe(200);
+});
+
+test('delete store test', async () => {
+    franchiseName = Math.random().toString(36).substring(2, 12);
+    const franchiseData = {
+        name: franchiseName,
+        admins: [{ email: admin.email }]
+    };
+
+    const franchiseRes = await request(app)
+        .post('/api/franchise')
+        .set('Authorization', `Bearer ${adminToken}`)  // Set the Authorization header
+        .send(franchiseData);
+
+    expect(franchiseRes.status).toBe(200);
+    frachiseID = franchiseRes.body.id;
+
+    storeName = Math.random().toString(36).substring(2, 12);
+
+    const storeData = {
+        franchiseId: frachiseID,
+        name: franchiseName
+    }
+
+    const storeRes = await request(app)
+        .post(`/api/franchise/${frachiseID}/store`)
+        .set('Authorization', `Bearer ${adminToken}`)  // Set the Authorization header
+        .send(storeData);
+
+    expect(storeRes.status).toBe(200);
+    storeID = storeRes.body.id;
+
+    const deleteStore = await request(app).delete(`/api/franchise/${frachiseID}/store/${storeID}`).set('Authorization', `Bearer ${adminToken}`);
+    expect(deleteStore.status).toBe(200);
+});
+
+
