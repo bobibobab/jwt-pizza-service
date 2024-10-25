@@ -32,8 +32,6 @@ beforeAll(async () => {
     testUserID = registerRes.body.user.id;
     adminUserID = registerResForAdmin.body.user.id;
     adminToken = registerResForAdmin.body.token;
-    console.log(adminToken);
-    
 })
 
 
@@ -54,8 +52,6 @@ test('update user test without role of admin', async () => {
     // const loginRes = await request(app).put('/api/auth').send(testUser);
     // expect(loginRes.status).toBe(200);
     const token = testUserAuthToken;
-
-
 
     const newEmail = Math.random().toString(36).substring(2, 12) + '@test.com';
     const newPassword = Math.random().toString(36).substring(2, 12);
