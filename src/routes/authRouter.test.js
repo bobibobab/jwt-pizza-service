@@ -61,7 +61,6 @@ test('update user test without role of admin', async () => {
     const updateUser = await request(app).put(`/api/auth/${userId}`).set('Authorization', `Bearer ${token}`).send({ email: newEmail, password: newPassword });
     // why 401? instead of 403.. 코드 보면 status 403 에 unauthorized 되어 있는데
     expect(updateUser.status).toBe(200);
-    expect(updateUser.status).toBe(200);
     const updateByAdmin = await request(app).put(`/api/auth/${testID}`).set('Authorization', `Bearer ${adminToken}`).send({ email: newEmail, password: newPassword });
     // why 401?? is it supposed to be 200? because of admin token.
     expect(updateByAdmin.status).toBe(403);
