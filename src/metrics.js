@@ -71,18 +71,18 @@ class Metrics {
             
         }
 
-        // res.on('finish', () => {
-        //     this.latencies.push(Date.now() - start);
-        //     if (res.statusCode === 200 && req.path === "/api/auth" && req.method === 'PUT'){
-        //         this.authSuccess++;
-        //         this.userCount ++;
-        //     }
-        //     if (res.statusCode !== 200 && req.path === "/api/auth" && req.method === 'PUT'){
-        //         this.authFailure ++;
-        //     } else{
-        //         this.failedPurchasePizza ++;
-        //     }
-        // });
+        res.on('finish', () => {
+            this.latencies.push(Date.now() - start);
+            if (res.statusCode === 200 && req.path === "/api/auth" && req.method === 'PUT'){
+                this.authSuccess++;
+                this.userCount ++;
+            }
+            if (res.statusCode !== 200 && req.path === "/api/auth" && req.method === 'PUT'){
+                this.authFailure ++;
+            } else{
+                this.failedPurchasePizza ++;
+            }
+        });
 
         next();
     }
