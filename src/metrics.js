@@ -23,7 +23,7 @@ class Metrics {
         this.latencies = [];
         this.userCount = 0;
         this.buf = new MetricBuilder();
-        
+
         this.requestTracker = this.requestTracker.bind(this);
         
     }
@@ -188,7 +188,7 @@ class Metrics {
             if (res.statusCode !== 200 && req.path === "/api/auth" && req.method === 'PUT') {
                 this.authFailure++;
             }
-            if (res.statusCode === 200){
+            else if (res.statusCode === 200){
                 console.log('Order processed successfully');
             }else{
                 this.failedPurchasePizza++;
