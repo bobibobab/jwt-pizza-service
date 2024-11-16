@@ -8,10 +8,10 @@ const Metrics = require("./metrics.js")
 
 const app = express();
 const metrics = new Metrics();
-app.use(metrics.requestTracker);
+
 app.use(express.json());
 app.use(setAuthUser);
-
+app.use(metrics.requestTracker);
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
