@@ -26,7 +26,7 @@ class Metrics {
         
     }
 
-    requestTracker = (req, res, next) => {
+    requestTracker(req, res, next) {
         console.log('middleware working');
         console.log('Request tracker invoked:', req.method, req.path);
         const start = Date.now();
