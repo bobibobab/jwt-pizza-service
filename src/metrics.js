@@ -186,7 +186,7 @@ class Metrics {
             if (res.statusCode !== 200 && req.path === "/api/auth" && req.method === 'PUT') {
                 this.authFailure++;
             } else if (res.statusCode === 200){
-                
+                console.log('Order processed successfully');
             }else{
                 this.failedPurchasePizza++;
             }
