@@ -8,7 +8,7 @@ const Metrics = require("./metrics.js")
 
 const app = express();
 const metrics = new Metrics();
-app.use(metrics.requestTracker);
+
 app.use(express.json());
 app.use(setAuthUser);
 
@@ -19,7 +19,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   next();
 });
-
+app.use(metrics.requestTracker);
 metrics.sendMetricsPeriodically(60000);
 
 const apiRouter = express.Router();
