@@ -23,6 +23,7 @@ class Metrics {
         this.latencies = [];
         this.userCount = 0;
         this.buf = new MetricBuilder();
+        
         this.requestTracker = this.requestTracker.bind(this);
         
     }
@@ -132,7 +133,7 @@ class Metrics {
         }, period);
     }
     // arrow function 을 쓰면 왜 error fetch 가 나와??
-    
+
     requestTracker(req, res, next){
         console.log('middleware working');
         console.log('Request tracker invoked:', req.method, req.path);
