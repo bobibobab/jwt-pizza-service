@@ -65,20 +65,24 @@ class Metrics {
         
         if (req.path === "/api/auth" && req.method === 'DELETE') {
             this.userCount--;
+            if (this.userCount < 0){
+                this.userCount = 0;
+            }
+            
         }
 
-        res.on('finish', () => {
-            this.latencies.push(Date.now() - start);
-            if (res.statusCode === 200 && req.path === "/api/auth" && req.method === 'PUT'){
-                this.authSuccess++;
-                this.userCount ++;
-            }
-            if (res.statusCode !== 200 && req.path === "/api/auth" && req.method === 'PUT'){
-                this.authFailure ++;
-            } else{
-                this.failedPurchasePizza ++;
-            }
-        });
+        // res.on('finish', () => {
+        //     this.latencies.push(Date.now() - start);
+        //     if (res.statusCode === 200 && req.path === "/api/auth" && req.method === 'PUT'){
+        //         this.authSuccess++;
+        //         this.userCount ++;
+        //     }
+        //     if (res.statusCode !== 200 && req.path === "/api/auth" && req.method === 'PUT'){
+        //         this.authFailure ++;
+        //     } else{
+        //         this.failedPurchasePizza ++;
+        //     }
+        // });
 
         next();
     }
