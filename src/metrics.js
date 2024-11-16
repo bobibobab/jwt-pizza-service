@@ -131,8 +131,9 @@ class Metrics {
             }
         }, period);
     }
-
-    requestTracker= (req, res, next) =>{
+    // arrow function 을 쓰면 왜 error fetch 가 나와??
+    
+    requestTracker(req, res, next){
         console.log('middleware working');
         console.log('Request tracker invoked:', req.method, req.path);
         const start = Date.now();
@@ -143,7 +144,6 @@ class Metrics {
                 this.postRequests++;
                 break;
             case 'GET':
-                console.log(this.getRequests);
                 this.getRequests++;
                 break;
             case 'DELETE':
@@ -180,6 +180,7 @@ class Metrics {
         res.on('finish', () => {
             this.latencies.push(Date.now() - start);
             if (res.statusCode === 200 && req.path === "/api/auth" && req.method === 'PUT') {
+                console.log('Login processed successfully');
                 this.authSuccess++;
                 this.userCount++;
             }
