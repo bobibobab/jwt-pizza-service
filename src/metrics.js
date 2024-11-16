@@ -23,68 +23,8 @@ class Metrics {
         this.latencies = [];
         this.userCount = 0;
         this.buf = new MetricBuilder();
+        this.requestTracker = this.requestTracker.bind(this);
         
-    }
-
-    requestTracker(req, res, next) {
-        console.log('middleware working');
-        console.log('Request tracker invoked:', req.method, req.path);
-        const start = Date.now();
-        //check the request and increase the number of the request.
-        this.totalRequests++;
-        switch (req.method) {
-            case 'POST':
-                this.postRequests++;
-                break;
-            case 'GET':
-                console.log(this.getRequests);
-                this.getRequests++;
-                break;
-            case 'DELETE':
-                this.deleteRequests++;
-                break;
-            case 'PUT':
-                this.putRequests++;
-                break;
-        }
-
-        //Checking the path of the pizza
-        if (req.path === "/api/order" && req.method === 'POST'){
-            const items = req.body.items || [];
-            let totalAmount = 0;
-            let totalPizzas = 0;
-
-            items.forEach(item => {
-                totalPizzas += 1;
-                totalAmount += item.price;
-            });
-
-            this.totalRevenue += totalAmount;
-            this.totalPizzasOrdered += totalPizzas;
-        }
-        
-        if (req.path === "/api/auth" && req.method === 'DELETE') {
-            this.userCount--;
-            if (this.userCount < 0){
-                this.userCount = 0;
-            }
-            
-        }
-
-        res.on('finish', () => {
-            this.latencies.push(Date.now() - start);
-            if (res.statusCode === 200 && req.path === "/api/auth" && req.method === 'PUT'){
-                this.authSuccess++;
-                this.userCount ++;
-            }
-            if (res.statusCode !== 200 && req.path === "/api/auth" && req.method === 'PUT'){
-                this.authFailure ++;
-            } else{
-                this.failedPurchasePizza ++;
-            }
-        });
-
-        next();
     }
 
     sendMetricToGrafana(metrics) {
@@ -191,7 +131,69 @@ class Metrics {
             }
         }, period);
     }
-}
 
+    requestTracker(req, res, next){
+        console.log('middleware working');
+        console.log('Request tracker invoked:', req.method, req.path);
+        const start = Date.now();
+        //check the request and increase the number of the request.
+        this.totalRequests++;
+        switch (req.method) {
+            case 'POST':
+                this.postRequests++;
+                break;
+            case 'GET':
+                console.log(this.getRequests);
+                this.getRequests++;
+                break;
+            case 'DELETE':
+                this.deleteRequests++;
+                break;
+            case 'PUT':
+                this.putRequests++;
+                break;
+        }
+
+        //Checking the path of the pizza
+        if (req.path === "/api/order" && req.method === 'POST') {
+            const items = req.body.items || [];
+            let totalAmount = 0;
+            let totalPizzas = 0;
+
+            items.forEach(item => {
+                totalPizzas += 1;
+                totalAmount += item.price;
+            });
+
+            this.totalRevenue += totalAmount;
+            this.totalPizzasOrdered += totalPizzas;
+        }
+
+        if (req.path === "/api/auth" && req.method === 'DELETE') {
+            this.userCount--;
+            if (this.userCount < 0) {
+                this.userCount = 0;
+            }
+
+        }
+
+        res.on('finish', () => {
+            this.latencies.push(Date.now() - start);
+            if (res.statusCode === 200 && req.path === "/api/auth" && req.method === 'PUT') {
+                this.authSuccess++;
+                this.userCount++;
+            }
+            if (res.statusCode !== 200 && req.path === "/api/auth" && req.method === 'PUT') {
+                this.authFailure++;
+            } else if (res.statusCode === 200){
+                
+            }else{
+                this.failedPurchasePizza++;
+            }
+        });
+
+        next();
+    }
+}
 
 module.exports = Metrics;

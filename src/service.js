@@ -11,6 +11,7 @@ const metrics = new Metrics();
 
 app.use(express.json());
 app.use(setAuthUser);
+app.use(metrics.requestTracker);
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
@@ -19,7 +20,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   next();
 });
-app.use(metrics.requestTracker);
+
 metrics.sendMetricsPeriodically(60000);
 
 const apiRouter = express.Router();
