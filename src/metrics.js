@@ -134,7 +134,7 @@ class Metrics {
     }
     // arrow function 을 쓰면 왜 error fetch 가 나와??
 
-    requestTracker(req, res, next){
+    requestTracker (req, res, next){
         console.log('middleware working');
         console.log('Request tracker invoked:', req.method, req.path);
         const start = Date.now();
@@ -188,7 +188,7 @@ class Metrics {
             if (res.statusCode !== 200 && req.path === "/api/auth" && req.method === 'PUT') {
                 this.authFailure++;
             }
-            else if (res.statusCode === 200){
+            if (res.statusCode === 200){
                 console.log('Order processed successfully');
             }else{
                 this.failedPurchasePizza++;
