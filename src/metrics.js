@@ -4,7 +4,6 @@ const MetricBuilder = require('./metricBuilder.js');
 
 class Metrics {
     
-
     constructor() {
         //request
         this.totalRequests = 0;
