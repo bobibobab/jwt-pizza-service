@@ -13,7 +13,7 @@ const metrics = new Metrics();
 app.use(express.json());
 app.use(setAuthUser);
 app.use(metrics.requestTracker);
-app.use(logger.httpLogger);
+//app.use(logger.httpLogger);
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
