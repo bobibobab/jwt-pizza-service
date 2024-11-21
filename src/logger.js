@@ -66,7 +66,7 @@ class Logger {
             orderDetails: JSON.stringify(orderInfo.order),
         };
 
-        this.log('info', 'order', logData);
+        this.log('info', 'order', factoryLogData);
     }
 
     unhandledErrorLogger(error){
